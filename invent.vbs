@@ -50,3 +50,7 @@ Function Ping(addr)
 		End If
 	Next
 End Function
+
+Function ReadableDate(str)
+	ReadableDate = Mid(str, 7, 2) & "." & Mid(str, 5, 2) & "." & Left(str, 4)
+End Function
