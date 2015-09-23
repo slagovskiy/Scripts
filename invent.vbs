@@ -32,7 +32,7 @@ Sub InventComp(compname)
 
 	Log "Win32_ComputerSystemProduct", _
 		"UUID", "", _
-		"Компьютер", _
+		"ComputerSystemProduct", _
 		"UUID", 3
 
 	Log "Win32_ComputerSystem", _
