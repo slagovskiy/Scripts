@@ -38,3 +38,15 @@ Function BuildVersion()
 	Next
 End Function
 
+Function Ping(addr)
+	Dim wmio, ping, p
+	Set wmio = GetObject("WinMgmts:{impersonationLevel=impersonate}")
+	Set ping = wmio.ExecQuery("SELECT StatusCode FROM Win32_PingStatus WHERE Address = '" & addr & "'")
+	For Each p In ping
+		If IsNull(p.StatusCode) Then
+			Unavailable = True
+		Else
+			Unavailable = (p.StatusCode <> 0)
+		End If
+	Next
+End Function
