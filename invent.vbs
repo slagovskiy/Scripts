@@ -1,6 +1,6 @@
 ' setup
 
-Const DATA_DIR = "data\"
+Const DATA_DIR = "\\zeus\invent$\"
 Const DATA_EXT = ".xml"
 
 On Error Resume Next
@@ -20,13 +20,13 @@ If Len(comp) > 0 Then InventComp(comp)
 
 Sub InventComp(compname)
 	Set wmio = GetObject("WinMgmts:{impersonationLevel=impersonate}!\\" & compname & "\Root\CIMV2")
-	Set rf = fso.CreateTextFile(DATA_DIR & compname & DATA_EXT, True)
+	Set rf = fso.OpenTextFile(DATA_DIR & compname & DATA_EXT, 2, True, -1)
 
 	Dim build
 	build = BuildVersion()
 
 	rf.WriteLine "<?xml version=""1.0"" ?>"
-	rf.WriteLine "	<info>"
+	rf.WriteLine "	<info date=""" & NowD & """ time=""" & NowT & """>"
 
 	rf.WriteLine "		<computer>"
 
@@ -37,79 +37,79 @@ Sub InventComp(compname)
 
 	Log "Win32_ComputerSystem", _
 		"Name,Domain,PrimaryOwnerName,UserName,TotalPhysicalMemory", "", _
-		"Компьютер", _
-		"Сетевое имя,Домен,Владелец,Текущий пользователь,Объем памяти (Мб)", 3
+		"Computer System", _
+		"Name,Domain,PrimaryOwnerName,UserName,TotalPhysicalMemory (Mb)", 3
 
 	rf.WriteLine "		</computer>"
 
 	rf.WriteLine "		<os>"
 	Log "Win32_OperatingSystem", _
 		"Caption,Version,CSDVersion,Description,RegisteredUser,SerialNumber,Organization,InstallDate", "", _
-		"Операционная система", _
-		"Наименование,Версия,Обновление,Описание,Зарегистрированный пользователь,Серийный номер,Организация,Дата установки", 3
+		"Operating System", _
+		"Caption,Version,CSDVersion,Description,RegisteredUser,SerialNumber,Organization,InstallDate", 3
 	rf.WriteLine "		</os>"
 
 	rf.WriteLine "		<hardware>"
 	rf.WriteLine "			<BaseBoard>"
 	Log "Win32_BaseBoard", _
 		"Manufacturer,Product,Version,SerialNumber", "", _
-		"Материнская плата", _
-		"Производитель,Наименование,Версия,Серийный номер", 4
+		"Base Board", _
+		"Manufacturer,Product,Version,SerialNumber", 4
 	rf.WriteLine "			</BaseBoard>"
 
 	rf.WriteLine "			<BIOS>"
 	Log "Win32_BIOS", _
 		"Manufacturer,Name,SMBIOSBIOSVersion,SerialNumber", "", _
 		"BIOS", _
-		"Производитель,Наименование,Версия,Серийный номер", 4
+		"Manufacturer,Name,SMBIOSBIOSVersion,SerialNumber", 4
 	rf.WriteLine "			</BIOS>"
 
 	rf.WriteLine "			<Processor>"
 	Log "Win32_Processor", _
 		"Name,Caption,CurrentClockSpeed,ExtClock,L2CacheSize,SocketDesignation,UniqueId", "", _
-		"Процессор", _
-		"Наименование,Описание,Частота (МГц),Частота FSB (МГц),Размер L2-кеша (кб),Разъем,UID", 4
+		"Processor", _
+		"Name,Caption,CurrentClockSpeed (MHz),ExtClock FSB (MHz),L2CacheSize (kb),SocketDesignation,UniqueId", 4
 	rf.WriteLine "			</Processor>"
 
 	rf.WriteLine "			<Memory>"
 	Log "Win32_PhysicalMemory", _
 		"Capacity,Speed,DeviceLocator", "", _
-		"Модуль памяти", _
-		"Размер (Мб),Частота,Размещение", 4
+		"Physical Memory", _
+		"Capacity (Mb),Speed,DeviceLocator", 4
 	rf.WriteLine "			</Memory>"
 
 	rf.WriteLine "			<DiskDrive>"
 	Log "Win32_DiskDrive", _
 		"Model,Size,InterfaceType", "InterfaceType <> 'USB'", _
-		"Диск", _
-		"Наименование,Размер (Гб),Интерфейс", 4
+		"Disk Drive", _
+		"Model,Size (Gb),InterfaceType", 4
 	rf.WriteLine "			</DiskDrive>"
 
 	rf.WriteLine "			<LogicalDisk>"
 	Log "Win32_LogicalDisk", _
 		"Name,FileSystem,Size,FreeSpace,VolumeSerialNumber", "DriveType = 3 AND Size IS NOT NULL", _
-		"Логический диск", _
-		"Наименование,Файловая система,Размер (Гб),Свободно (Гб),Серийный номер", 4
+		"Logical Disk", _
+		"Name,FileSystem,Size (Gb),FreeSpace (Gb),VolumeSerialNumber", 4
 	rf.WriteLine "			</LogicalDisk>"
 
 	rf.WriteLine "			<CDRomDrive>"
 	Log "Win32_CDROMDrive", _
 		"Name", "", _
-		"CD-привод", _
-		"Наименование", 4
+		"CDROM Drive", _
+		"Name", 4
 	rf.WriteLine "			</CDRomDrive>"
 
 	rf.WriteLine "			<VideoController>"
 	If build >= 2600 Then 'Windows xp/2003 and >
 		Log "Win32_VideoController", _
 			"Name,AdapterRAM,VideoProcessor,VideoModeDescription,DriverDate,DriverVersion", "NOT (Name LIKE '%Secondary')", _
-			"Видеоконтроллер", _
-			"Наименование,Объем памяти (Мб),Видеопроцессор,Режим работы,Дата драйвера,Версия драйвера", 4
+			"Video Controller", _
+			"Name,AdapterRAM (Mb),VideoProcessor,VideoModeDescription,DriverDate,DriverVersion", 4
 	Else 'Windows 2000
 		Log "Win32_VideoController", _
 			"Name,AdapterRAM,VideoProcessor,VideoModeDescription,DriverDate,DriverVersion", "", _
-			"Видеоконтроллер", _
-			"Наименование,Объем памяти (Мб),Видеопроцессор,Режим работы,Дата драйвера,Версия драйвера", 4
+			"Video Controller", _
+			"Name,AdapterRAM (Mb),VideoProcessor,VideoModeDescription,DriverDate,DriverVersion", 4
 	End If
 	rf.WriteLine "			</VideoController>"
 
@@ -117,28 +117,28 @@ Sub InventComp(compname)
 	If build >= 2600 Then 'Windows XP/2003 and >
 		Log "Win32_NetworkAdapter", _
 		"Name,AdapterType,PermanentAddress,MACAddress", "NetConnectionStatus > 0 AND NOT (Name LIKE 'VMware%')", _
-		"Сетевой адаптер", _
-		"Наименование,Тип,IP-адрес,MAC-адрес", 4
+		"Network Adapter", _
+		"Name,AdapterType,PermanentAddress,MACAddress", 4
 	Else 'Windows 2000
 		Log "Win32_NetworkAdapter", _
 		"Name,PermanentAddress,MACAddress", "", _
-		"Сетевой адаптер", _
-		"Наименование,IP-адрес,MAC-адрес", 4
+		"Network Adapter", _
+		"Name,PermanentAddress,MACAddress", 4
 	End If
 	rf.WriteLine "			</NetworkAdapter>"
 
 	rf.WriteLine "			<SoundDevice>"
 	Log "Win32_SoundDevice", _
 		"Name", "", _
-		"Звуковое устройство", _
-		"Наименование", 4
+		"Sound Device", _
+		"Name", 4
 	rf.WriteLine "			</SoundDevice>"
 
 	rf.WriteLine "			<SCSIController>"
 	Log "Win32_SCSIController", _
 		"Name", "", _
-		"SCSI контроллер", _
-		"Наименование", 4
+		"SCSI Controller", _
+		"Name", 4
 	rf.WriteLine "			</SCSIController>"
 
 	'Windows XP/2003 and >
@@ -146,41 +146,51 @@ Sub InventComp(compname)
 	If build >= 2600 Then
 		Log "Win32_Printer", _
 		"Name,PortName,ShareName", "(Local = True OR Network = False) AND (PortName LIKE '%USB%' OR PortName LIKE '%LPT%')", _
-		"Принтер", _
-		"Наименование,Порт,Сетевое имя", 4
+		"Printer", _
+		"Name,PortName,ShareName", 4
 	End If
 	rf.WriteLine "			</Printer>"
 
 	rf.WriteLine "			<PortConnector>"
 	Log "Win32_PortConnector", _
 		"ExternalReferenceDesignator,InternalReferenceDesignator", "", _
-		"Разъем порта", _
-		"Внешний,Внутренний", 4
+		"PortConnector", _
+		"ExternalReferenceDesignator,InternalReferenceDesignator", 4
 	rf.WriteLine "			</PortConnector>"
 
 	rf.WriteLine "			<Keyboard>"
 	Log "Win32_Keyboard", _
 		"Name,Description", "", _
-		"Клавиатура", _
-		"Наименование,Описание", 4
+		"Keyboard", _
+		"Name,Description", 4
 	rf.WriteLine "			</Keyboard>"
 
 	rf.WriteLine "			<PointingDevice>"	
 	Log "Win32_PointingDevice", _
 		"Name", "", _
-		"Мышь", _
-		"Наименование", 4
+		"PointingDevice", _
+		"Name", 4
 	rf.WriteLine "			</PointingDevice>"
 
 	rf.WriteLine "		</hardware>"
 
+	rf.WriteLine "		<software>"
+
+	Set wmio = GetObject("WinMgmts:{impersonationLevel=impersonate}!\\" & comp & "\Root\default:StdRegProv")
+
+	Dim s, item
+	s = ExtractSoft("SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\")
+	rf.WriteLine "			<32>" & VbCrLf & s & "			</32>"
+
+	s = ExtractSoft("SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\")
+	rf.WriteLine "			<64>" & VbCrLf & s & "			</64>"
+
+	rf.WriteLine "		</software>"
 
 	rf.WriteLine "	</info>"
-	
+
 	rf.Close
 End Sub
-
-msgbox "ok"
 
 'WQL-query
 'from - WMI class
@@ -242,6 +252,64 @@ Sub Log(from, sel, where, sect, param, deep)
 
 End Sub
 
+Function ExtractSoft(key)
+	Const HKLM = &H80000002 'HKEY_LOCAL_MACHINE
+	Dim items
+	wmio.EnumKey HKLM, key, items
+	If IsNull(items) Then
+		ExtractSoft = ""
+		Exit Function
+	End If
+
+	Dim s, item, ok, name, publ, inst, x, prev, u
+	s = ""
+	For Each item In items
+
+		ok = True
+		u = False
+
+		prev = name
+		wmio.GetStringValue HKLM, key & item, "DisplayName", name
+		If IsNull(name) Or Len(name) = 0 Or name = prev Then
+			ok = False
+		Else
+			name = Replace(name, ";", "_")
+			name = Replace(name, """", "'")
+		End If
+
+		If ok Then
+			wmio.GetStringValue HKLM, key & item, "ParentKeyName", x
+			If False Then
+				If IsNull(x) Or x <> "OperatingSystem" Then ok = False
+			Else
+				If Not IsNull(x) And x = "OperatingSystem" Then ok = False
+			End If
+		End If
+
+		If ok Then
+			wmio.GetStringValue HKLM, key & item, "InstallDate", inst
+			If IsNull(inst) Or Len(inst) < 8 Then
+				inst = "-"
+			Else
+				inst = Mid(inst, 7, 2) & "." & Mid(inst, 5, 2) & "." & Left(inst, 4)
+			End If
+		End If
+
+		If ok Then
+			wmio.GetStringValue HKLM, key & item, "Publisher", publ
+			If IsNull(publ) Or Len(publ) = 0 Then publ = "-"
+			publ = Replace(publ, """", "'")
+		End If
+
+		If ok Then s = s & "					<item name=""" & name & """ publusher=""" & publ & """ installdate=""" & inst & """ />" & vbCrLf
+
+	Next
+
+	ExtractSoft = s
+
+End Function
+
+
 Function BuildVersion()
 	Dim cls, item
 	Set cls = wmio.ExecQuery("Select BuildVersion From Win32_WMISetting")
@@ -265,4 +333,26 @@ End Function
 
 Function ReadableDate(str)
 	ReadableDate = Mid(str, 7, 2) & "." & Mid(str, 5, 2) & "." & Left(str, 4)
+End Function
+
+Function NowD()
+    d = AddZero(Day(Now))
+    m = AddZero(Month(Now))    
+    y = AddZero(Year(Now))
+    NowD = d & "/" & m & "/" & y
+End Function
+
+Function NowT()
+    h = AddZero(Hour(Now))
+    m = AddZero(Minute(Now))    
+    s = AddZero(Second(Now))
+    NowT = h & ":" & m & ":" & s
+End Function
+
+Function AddZero(num)
+    If(Len(num)=1) Then
+        AddZero="0"&num
+    Else
+        AddZero=num
+    End If
 End Function
