@@ -32,7 +32,7 @@ Sub InventComp(compname)
 
 	Log "Win32_ComputerSystemProduct", _
 		"UUID", "", _
-		"ComputerSystemProduct", _
+		"Компьютер", _
 		"UUID", 3
 
 	Log "Win32_ComputerSystem", _
@@ -180,10 +180,10 @@ Sub InventComp(compname)
 
 	Dim s, item
 	s = ExtractSoft("SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\")
-	rf.WriteLine "			<32>" & VbCrLf & s & "			</32>"
+	rf.WriteLine "			<x32>" & VbCrLf & s & "			</x32>"
 
 	s = ExtractSoft("SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\")
-	rf.WriteLine "			<64>" & VbCrLf & s & "			</64>"
+	rf.WriteLine "			<x64>" & VbCrLf & s & "			</x64>"
 
 	rf.WriteLine "		</software>"
 
@@ -243,7 +243,7 @@ Sub Log(from, sel, where, sect, param, deep)
 
 			value = Trim(Replace(value, ";", "_"))
 
-			If Len(value) > 0 Then rf.WriteLine tab & "<item name=""" & names(i) & """ value=""" & value & """ num=""" & num & """ />"
+			If Len(value) > 0 Then rf.WriteLine tab & "<item name=""" & Replace(names(i), "&", " ") & """ value=""" & Replace(value, "&", " ") & """ num=""" & num & """ />"
 
 		Next
 
@@ -301,7 +301,7 @@ Function ExtractSoft(key)
 			publ = Replace(publ, """", "'")
 		End If
 
-		If ok Then s = s & "					<item name=""" & name & """ publusher=""" & publ & """ installdate=""" & inst & """ />" & vbCrLf
+		If ok Then s = s & "					<item name=""" & Replace(name, "&", " ") & """ publusher=""" & Replace(publ, "&", " ") & """ installdate=""" & inst & """ />" & vbCrLf
 
 	Next
 
