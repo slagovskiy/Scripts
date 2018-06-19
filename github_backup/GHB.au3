@@ -30,9 +30,11 @@ Func Main()
 	  $url = Json_Get($json, '[' & String($i) & '].html_url')
 	  $name = Json_Get($json, '[' & String($i) & '].name')
 	  if ($url == "") Then ExitLoop
-	  RunWait($gitpath & " clone " & $url)
-	  FileChangeDir(@ScriptDir & "/repos/" & $name)
-	  RunWait($gitpath & " pull ")
+	  if ($gitpath <> "") Then
+		 RunWait($gitpath & " clone " & $url)
+		 FileChangeDir(@ScriptDir & "/repos/" & $name)
+		 RunWait($gitpath & " pull ")
+	  EndIf
 	  $i = $i + 1
    WEnd
 
