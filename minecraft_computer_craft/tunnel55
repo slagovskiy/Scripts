@@ -1,0 +1,162 @@
+tArgs={...}
+len=tonumber(tArgs[1])
+ 
+i=0
+k=0
+m=0
+h=0
+svet=1
+ 
+function digi(k)
+ 
+ if k==1 then
+   m=1
+   while m==1 do
+     if turtle.detect() then
+       turtle.dig()
+       sleep(0.5)
+     end
+     if turtle.detect()==false then
+       m=0
+     end  
+   end
+ end
+ 
+ if k==2 then
+   m=1
+   while m==1 do
+     if turtle.detectUp() then
+       turtle.digUp()
+       sleep(0.5)
+     end
+     if turtle.detectUp()==false then
+       m=0
+     end  
+   end
+ end
+ 
+ if k==3 then
+   m=1
+   while m==1 do
+     if turtle.detectDown() then
+       turtle.digDown()
+       sleep(0.5)
+     end
+     if turtle.detectDown()==false then
+       m=0
+     end  
+   end
+ end
+ 
+end
+ 
+while i~=len do
+  digi(1)
+  turtle.forward()
+  digi(2)
+  turtle.up()
+  digi(2)
+  turtle.down()
+  digi(3)
+  turtle.down()
+  digi(3)
+  turtle.up()
+  turtle.turnLeft()
+
+  digi(1)
+  turtle.forward()
+  digi(2)
+  turtle.up()
+  digi(2)
+  turtle.down()
+  digi(3)
+  turtle.down()
+  digi(3)
+  turtle.up()
+
+  digi(1)
+  turtle.forward()
+  digi(2)
+  turtle.up()
+  digi(2)
+  turtle.down()
+  digi(3)
+  turtle.down()
+  digi(3)
+  turtle.up()
+
+  turtle.turnRight()
+  turtle.turnRight()
+  turtle.forward()
+  turtle.forward()
+  turtle.forward()
+
+  digi(1)
+  turtle.forward()
+  digi(2)
+  turtle.up()
+  digi(2)
+  turtle.down()
+  digi(3)
+  turtle.down()
+  digi(3)
+  turtle.up()
+
+  digi(1)
+  turtle.forward()
+  digi(2)
+  turtle.up()
+  digi(2)
+  turtle.down()
+  digi(3)
+  turtle.down()
+  digi(3)
+  turtle.up()
+
+  turtle.turnLeft()
+  turtle.turnLeft()
+  turtle.forward()
+  turtle.forward()
+  turtle.turnRight()
+
+ 
+  if turtle.getItemCount(16)>0 then
+    turtle.turnLeft()
+    turtle.down()
+    turtle.down()
+    turtle.forward()
+    turtle.select(2)
+    turtle.place()
+   
+    for h=1,14 do
+      turtle.select(h+2)
+      turtle.drop()
+    end
+    turtle.select(3)  
+    turtle.back()    
+    turtle.turnRight()    
+    turtle.up()
+    turtle.up()
+  end
+ 
+  if svet==4 then
+    turtle.select(1)
+    turtle.turnRight()    
+    turtle.forward()
+    turtle.place()
+    turtle.turnLeft()
+    turtle.turnLeft()
+    turtle.forward()
+    turtle.forward()
+    turtle.place()
+    turtle.turnRight()    
+    turtle.turnRight()    
+    turtle.forward()
+    turtle.turnLeft()
+    svet=0
+  end
+ 
+  i=i+1
+  svet=svet+1
+ 
+end

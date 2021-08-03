@@ -1,0 +1,1233 @@
+function saveCoordinates()
+        local file = fs.open ("/save/Coordinates.dat","w")
+        file.writeLine(xp)
+        file.writeLine(yp)
+        file.writeLine(zp)
+        file.writeLine(nap)
+        file.writeLine(r)
+        file.close()
+end
+ 
+function saveSettings()
+        local file=fs.open("/save/Settings.dat","w")
+        file.writeLine(view)
+        file.writeLine(c)
+        file.writeLine(cmin)
+        file.writeLine(res)
+        file.writeLine(fuel)
+        file.writeLine(coal)
+        file.writeLine(type)
+        file.writeLine(scrab)
+        file.writeLine(invslot)
+        file.writeLine(error)
+        file.close()
+end
+ 
+function loadCoordinates()
+        local file=fs.open("/save/Coordinates.dat","r")
+        xp=tonumber(file.readLine())
+        yp=tonumber(file.readLine())
+        zp=tonumber(file.readLine())
+        nap=tonumber(file.readLine())
+        r=tonumber(file.readLine())
+        file.close()
+end
+ 
+function loadSettings()
+        local file = fs.open ("/save/Settings.dat", "r")
+        view=tonumber(file.readLine())
+        c=tonumber(file.readLine())
+        cmin=tonumber(file.readLine())
+        res=tonumber(file.readLine())
+        fuel=tonumber(file.readLine())
+        coal=tonumber(file.readLine())
+        type=tonumber(file.readLine())
+        scrab=tonumber(file.readLine())
+        invslot=tonumber(file.readLine())
+        file.close()
+end
+ 
+function digPoz()
+        if nap==1 then xp=xp+1 end
+        if nap==2 then yp=yp+1 end
+        if nap==3 then xp=xp-1 end
+        if nap==4 then yp=yp-1 end
+        saveCoordinates()
+        while xp>r+5 or yp>r+5 do
+                print("ERROR")
+                sleep(10)
+                error=1
+        end
+end
+ 
+function Forward()
+        while not turtle.forward() do
+                if not turtle.dig() then
+                        turtle.attack()
+                end
+                sleep(0.5)
+        end
+        digPoz()
+end
+ 
+function Up()
+        while not turtle.up() do
+                if not turtle.digUp() then
+                        turtle.attackUp()
+                end
+                sleep(0.5)
+        end
+        zp=zp+1
+        saveCoordinates()
+end
+ 
+function Down()
+        while not turtle.down() do
+                        if not turtle.digDown() then
+                                turtle.attackDown()
+                        end
+                        sleep(0.5)
+        end
+        zp=zp-1
+        saveCoordinates()
+end
+ 
+function digForward()
+        if zp==res then
+                while turtle.detect() do
+                        if not turtle.dig() then
+                                turtle.attack()
+                        end
+                        sleep(0.5)
+                end
+        elseif not turtle.dig() then turtle.attack() end
+end
+ 
+function refuelStation()
+        rst=rs.getInput("top")
+        if rst==false then
+                print("Pause")
+                print("If you want the turtle continued to work. Serve on top of redstone signal.")
+                while rst==false do
+                        rst=rs.getInput("top")
+                        sleep(1)
+                end
+        end
+        if fuel==1 then
+                        if turtle.getFuelLevel()<fld then
+                                u=0
+                                print("Low Fuel Level")
+                                print("Fuel loading")
+                        else u=1 end
+                        if u==0 then
+                                while u==0 do
+                                        if turtle.getFuelLevel()>=fld then u=1 else u=0 end
+                                        sleep(1)
+                                end
+                                print("Fuel loading is complete")
+                        end
+        elseif fuel==0 then
+                        while nap~=4 do
+                                turnRight()
+                        end
+                        while turtle.getFuelLevel()<fld do
+                                term.clear()
+                                term.setCursorPos(1,1)
+                                print("Low Fuel Level")
+                                print("Put fuel in the trunk")
+                                turtle.select(1)
+                                ch=0
+                                while turtle.suck() do
+                                        ch=ch+1
+                                        if ch>=8 then
+                                                break
+                                        end
+                                end
+                                for ch=1,8 do
+                                        if turtle.getItemCount(ch)>0 then
+                                                turtle.refuel()
+                                        end
+                                end
+                        end
+                        print("Fuel loading is complete")
+                        while nap~=3 do
+                                turnLeft()
+                        end
+        end
+end
+ 
+function uploadItems()
+        print("Uploading items...")
+        if type==0 then
+                for chest=1,invslot do
+                        turtle.select(chest)
+                        turtle.drop()
+                end
+        elseif type==1 then
+                if ci==0 then
+                        turnRight()
+                elseif ci==1 then
+                        turnLeft()
+                end
+                digForward()
+                turtle.select(16)
+                turtle.place()
+                for chest=1,invslot do
+                        turtle.select(chest)
+                        turtle.drop()
+                end
+                turtle.select(16)
+                turtle.dig()
+                if ci==0 then
+                        turnLeft()
+                elseif ci==1 then
+                        turnRight()
+                end
+        end
+        turtle.select(1)
+end
+ 
+function refuelInv()
+                print("Recharge from inventory")
+                if svrab==0 then inv=15 else inv=12 end
+                for slot=1,inv do
+                        turtle.select(slot)
+                        turtle.refuel()
+                end
+        turtle.select(1)
+end
+ 
+function backFuelLevel()
+        if xp<0 then xu=-(xp) else xu=xp end
+        if yp<0 then yu=-(yp) else yu=yp end
+        fl=xu+yu+c+res+20
+        if turtle.getFuelLevel()<fl then
+                if type==1 then uploadItems() end
+                backSupply()
+        end
+end
+ 
+ function delScrab()
+        turtle.turnRight()
+        for chest=1,invslot do
+                for slot=compare,16 do
+                        turtle.select(slot)
+                        if turtle.compareTo(chest) then
+                                turtle.select(chest)
+                                turtle.drop()
+                                break
+                        end
+                end
+        end
+        turtle.turnLeft()
+        fullinv=0
+        for slot=1,invslot do
+                if turtle.getItemCount(slot)>0 then fullinv=fullinv+1 end
+        end
+        turtle.select(1)
+end
+ 
+function back()
+        fullinv=0
+        for slot=1,invslot do
+                if turtle.getItemCount(slot)>0 then fullinv=fullinv+1 end
+        end
+                turtle.select(1)
+        if fullinv>=invslot then
+                                if scrab==1 then delScrab() end
+                                if fullinv>invslot-3 then
+                                        if type==0 then backSupply()
+                                        elseif type==1 then     uploadItems() end
+                                end
+        end
+end
+ 
+function dig()
+        if zp==res then
+                while zp~=cmin do
+                        digForward()
+                        Down()
+                        back()
+                        backFuelLevel()
+                end
+        else
+                if zp==cmin then
+                        while zp~=res do
+                                Up()
+                                back()
+                                backFuelLevel()
+                        end
+                end
+        end
+end
+ 
+function turnRight()
+        turtle.turnRight()
+        if nap==4 then nap=1 else nap=nap+1 end
+        saveCoordinates()
+end
+ 
+function turnLeft()
+        turtle.turnLeft()
+        if nap==1 then nap=4 else nap=nap-1 end
+        saveCoordinates()
+end
+ 
+function backSupply()
+print("Back station supply")
+xd=xp
+yd=yp
+zd=zp
+napd=nap
+if view==0 then
+        if napd==1 then
+                if yp~=0 then
+                        while nap~=2 do
+                                turnRight()
+                        end
+                        while yp~=0 do
+                                Forward()
+                        end
+                end
+                if xp~=0 then
+                        if xp>0 then
+                                while nap~=3 do
+                                        turnRight()
+                                end
+                        else
+                                while nap~=1 do
+                                        turnLeft()
+                                end
+                        end
+                        repeat
+                                Forward()
+                        until  xp==0
+                end
+        end
+        if napd==2 then
+                if xp~=0 then
+                        while nap~=3 do
+                                turnRight()
+                        end
+                        repeat
+                                Forward()
+                        until  xp==0
+                end
+                if yp~=0 then
+                        if yp>0 then
+                                while nap~=4 do
+                                        turnRight()
+                                end
+                        else
+                                while nap~=2 do
+                                        turnLeft()
+                                end
+                        end
+                        repeat
+                                Forward()
+                        until  yp==0
+                end
+        end
+        if napd==3 then
+                if yp~=0 then
+                        while nap~=4 do
+                                turnRight()
+                        end
+                        repeat
+                                Forward()
+                        until  yp==0
+                end
+                if xp~=0 then
+                        if xp<0 then
+                                while nap~=1 do
+                                        turnRight()
+                                end
+                        else
+                                while nap~=3 do
+                                        turnLeft()
+                                end
+                        end
+                        repeat
+                                Forward()
+                        until  xp==0
+                end
+        end
+        if napd==4 then
+                if xp~=0 then
+                        while nap~=1 do
+                                turnRight()
+                        end
+                        repeat
+                                Forward()
+                        until  xp==0
+                end
+                if yp~=0 then
+                        if yp<0 then
+                                while nap~=2 do
+                                        turnRight()
+                                end
+                        else
+                                while nap~=4 do
+                                        turnLeft()
+                                end
+                        end
+                        repeat
+                                Forward()
+                        until  yp==0
+                end
+        end
+elseif view==1 then
+                if napd==2 then
+                                repeat
+                                                turnRight()
+                                until nap==3
+                                if xp~=0 then
+                                                repeat
+                                                                Forward()
+                                                until xp==0
+                                end
+                                if yp>0 then
+                                                repeat
+                                                                turnRight()
+                                                until nap==4
+                                                repeat
+                                                                Forward()
+                                                until yp==0
+                                elseif yp<0 then
+                                                repeat
+                                                                turnLeft()
+                                                until nap==2
+                                                repeat
+                                                                Forward()
+                                                until yp==0
+                                end
+                end
+                if napd==4 then
+                                repeat
+                                                turnLeft()
+                                until nap==3
+                                if xp~=0 then
+                                                repeat
+                                                                Forward()
+                                                until xp==0
+                                end
+                                if yp>0 then
+                                                repeat
+                                                                turnRight()
+                                                until nap==4
+                                                repeat
+                                                                Forward()
+                                                until yp==0
+                                elseif yp<0 then
+                                                repeat
+                                                                turnLeft()
+                                                until nap==2
+                                                repeat
+                                                                Forward()
+                                                until yp==0
+                                end
+                end
+                if napd==1 then
+                                if yp>0 then
+                                                repeat
+                                                                turnLeft()
+                                                until nap==4
+                                elseif yp<0 then
+                                                repeat
+                                                                turnRight()
+                                                until nap==2
+                                end
+                                repeat
+                                                Forward()
+                                until yp==0
+                                if xp~=0 then
+                                                repeat
+                                                                turnRight()
+                                                until nap==3
+                                                repeat
+                                                                Forward()
+                                                until xp==0
+                                end
+                end
+                if napd==3 then
+                                if yp>0 then
+                                                repeat
+                                                                turnRight()
+                                                until nap==4
+                                elseif yp<0 then
+                                                repeat
+                                                                turnLeft()
+                                                until nap==2
+                                end
+                                repeat
+                                                Forward()
+                                until yp==0
+                                if xp~=0 then
+                                                repeat
+                                                                turnRight()
+                                                until nap==3
+                                                repeat
+                                                                Forward()
+                                                until xp==0
+                                end
+                end
+end
+if nap~=1 and view==0 then
+                if nap==2 then
+                                repeat
+                                                turnLeft()
+                                until nap==1
+                else
+                                repeat
+                                                turnRight()
+                                until nap==1
+                end
+end
+if nap~=3 and view==1 then
+                if nap==2 then
+                                repeat
+                                                turnLeft()
+                                until nap==3
+                else
+                                repeat
+                                                turnRight()
+                                until nap==3
+                end
+end
+if type==0 then fld=fl*2+1000
+elseif type==1 then fld=50000 end
+if coal==1 then refuelInv() end
+repeat
+        Up()
+until zp==c
+if type==0 then uploadItems() end
+refuelStation()
+backDig()
+end
+ 
+function backDig()
+        print("Back mine")
+        if zp~=zd then
+                if zp>zd then
+                        repeat
+                                Down()
+                        until zp==zd
+                else
+                        repeat
+                                Up()
+                        until zp==zd
+                end
+        end
+        if view==0 then
+                if napd==1 then
+                        if xd~=0 then
+                                if xd<0 then
+                                        repeat
+                                                turnRight()
+                                        until nap==3
+                                end
+                                repeat
+                                        Forward()
+                                until xp==xd
+                        end
+                        if nap==1 then
+                                repeat
+                                        turnLeft()
+                                until nap==4
+                        else
+                                repeat
+                                        turnRight()
+                                until nap==4
+                        end
+                        repeat
+                                Forward()
+                        until yp==yd
+                end
+                if napd==2 then
+                        if yd~=0 then
+                                if yd<0 then
+                                        repeat
+                                                turnLeft()
+                                        until nap==4
+                                else
+                                        repeat
+                                                turnRight()
+                                        until nap==2
+                                end
+                                repeat
+                                        Forward()
+                                until yp==yd
+                        end
+                        if nap==4 then
+                                repeat
+                                        turnRight()
+                                until nap==1
+                        else
+                                repeat
+                                        turnLeft()
+                                until nap==1
+                        end
+                        repeat
+                                Forward()
+                        until xp==xd
+                end
+                if napd==3 then
+                        if xd~=0 then
+                                if xd<0 then
+                                        repeat
+                                                turnRight()
+                                        until nap==3
+                                end
+                                repeat
+                                        Forward()
+                                until xp==xd
+                        end
+                        if nap==1 then
+                                repeat
+                                        turnRight()
+                                until nap==2
+                        else
+                                repeat
+                                        turnLeft()
+                                until nap==2
+                        end
+                        repeat
+                                Forward()
+                        until yp==yd
+                end
+                if napd==4 then
+                        if yd~=0 then
+                                if yd>0 then
+                                        repeat
+                                                turnRight()
+                                        until nap==2
+                                else
+                                        repeat
+                                                turnLeft()
+                                        until nap==4
+                                end
+                                repeat
+                                        Forward()
+                                until yp==yd
+                        end
+                        if nap==2 then
+                                repeat
+                                        turnRight()
+                                until nap==3
+                        else
+                                repeat
+                                        turnLeft()
+                                until nap==3
+                        end
+                        repeat
+                                Forward()
+                        until xp==xd
+                end
+                repeat
+                        turnRight()
+                until nap==napd
+        elseif view==1 then
+                if napd==2 then
+                        if yd>0 then
+                                repeat
+                                        turnLeft()
+                                until nap==2
+                                repeat
+                                        Forward()
+                                until yp==yd
+                                if xd~=0 then
+                                        repeat
+                                                turnLeft()
+                                        until nap==1
+                                        repeat
+                                                Forward()
+                                        until xp==xd
+                                        repeat
+                                                turnRight()
+                                        until nap==2
+                                end
+                        elseif yd<0 then
+                                repeat
+                                        turnRight()
+                                until nap==4
+                                repeat
+                                        Forward()
+                                until yp==yd
+                                repeat
+                                        turnRight()
+                                until nap==1
+                                repeat
+                                        Forward()
+                                until xp==xd
+                                repeat
+                                        turnLeft()
+                                until nap==2
+                        elseif yd==0 then
+                                repeat
+                                        turnRight()
+                                until nap==1
+                                repeat
+                                        Forward()
+                                until xp==xd
+                                repeat
+                                        turnRight()
+                                until nap==2
+                        end
+                end
+                if napd==4 then
+                        if yd>0 then
+                                repeat
+                                        turnLeft()
+                                until nap==2
+                                repeat
+                                        Forward()
+                                until yp==yd
+                                repeat
+                                        turnLeft()
+                                until nap==1
+                                repeat
+                                        Forward()
+                                until xp==xd
+                                repeat
+                                        turnLeft()
+                                until nap==4
+                        elseif yd<0 then
+                                repeat
+                                        turnRight()
+                                until nap==4
+                                repeat
+                                        Forward()
+                                until yp==yd
+                                if xd~=0 then
+                                        repeat
+                                                turnRight()
+                                        until nap==1
+                                        repeat
+                                                Forward()
+                                        until xp==xd
+                                        repeat
+                                                turnRight()
+                                        until nap==4
+                                end
+                        elseif yd==0 then
+                                repeat
+                                        turnRight()
+                                until nap==1
+                                repeat
+                                        Forward()
+                                until xp==xd
+                                repeat
+                                        turnRight()
+                                until nap==4
+                        end
+                end
+                if napd==1 then
+                        if xd~=0 then
+                                repeat
+                                        turnRight()
+                                until nap==1
+                                repeat
+                                        Forward()
+                                until xp==xd
+                        end
+                        if yd>0 then
+                                repeat
+                                        turnRight()
+                                until nap==2
+                                repeat
+                                        Forward()
+                                until yp==yd
+                                repeat
+                                        turnLeft()
+                                until nap==1
+                        elseif yd<0 then
+                                repeat
+                                        turnLeft()
+                                until nap==4
+                                repeat
+                                        Forward()
+                                until yp==yd
+                                repeat
+                                        turnRight()
+                                until nap==1
+                        end
+                end
+                if napd==3 then
+                        if xd~=0 then
+                                repeat
+                                        turnRight()
+                                until nap==1
+                                repeat
+                                        Forward()
+                                until xp==xd
+                        end
+                        if yd>0 then
+                                repeat
+                                        turnRight()
+                                until nap==2
+                                repeat
+                                        Forward()
+                                until yp==yd
+                                repeat
+                                        turnRight()
+                                until nap==3
+                        elseif yd<0 then
+                                repeat
+                                        turnLeft()
+                                until nap==4
+                                repeat
+                                        Forward()
+                                until yp==yd
+                                repeat
+                                        turnLeft()
+                                until nap==3
+                        end
+                end
+        end
+end
+ 
+function timer()  
+        local myTimer = os.startTimer(t)
+        while true do
+                local event,timerID = os.pullEvent("timer")
+                if timerID == myTimer then break end
+        end
+end
+ 
+function input()
+        while true do
+                term.clear()
+                term.setCursorPos(1,1)
+                print("Enter 1 to careers started from the beginning. You have 30 seconds.")
+                start =tonumber(read())
+                if start==1 then
+                        break
+                end
+        end
+end
+ 
+term.clear()
+term.setCursorPos(1,1)
+ 
+t=30
+start=0
+print("30 seconds to download coordinates")
+parallel.waitForAny(input, timer)
+ 
+if not fs.exists("save") then
+        fs.makeDir("save")
+end
+ 
+if start==0 then
+        if error==1 then
+                print("Version 1.5.1 of 05.06.2014, BeastMashine")
+                exit()
+        end
+        if fs.exists("/save/Coordinates.dat") then
+                for chet=1,30 do
+                        term.clear()
+                        term.setCursorPos(1,1)
+                        pr=31-chet
+                end
+                loadCoordinates()
+                loadSettings()
+                xs=xp
+                xs=xp
+                ys=yp
+                zs=zp
+                naps=nap
+                if xs>0 then
+                        while nap~=3 do
+                                turnRight()
+                        end
+                elseif xs<0 then
+                        while nap~=1 do
+                                turnRight()
+                        end
+                end
+                while xp~=0 do
+                        Forward()
+                end
+                if ys>0 then
+                        while nap~=4 do
+                                turnRight()
+                        end
+                elseif ys<0 then
+                        while nap~=2 do
+                                turnRight()
+                        end
+                end
+                while yp~=0 do
+                        Forward()
+                end
+                if scrab==1 then
+                        for chest=1,invslot do
+                                for slot=invslot+1,16 do
+                                        turtle.select(slot)
+                                        if turtle.compareTo(chest) then
+                                                turtle.select(chest)
+                                                turtle.drop()
+                                                break
+                                        end
+                                end
+                        end
+                        turtle.select(1)
+                end
+                while zp<res do
+                        Up()
+                end
+                while zp<c do
+                        er=0
+                        while not turtle.up() do
+                                er=er+1
+                                if er>10 then
+                                        error=1
+                                end
+                                sleep(1)
+                        end
+                        zp=zp+1
+                        saveCoordinates()
+                end
+                while nap~=3 do
+                        turnRight()
+                end
+                for chest=1,invslot do
+                        turtle.select(chest)
+                        turtle.drop()
+                end
+                turtle.select(1)
+                while nap~=1 do
+                        turnRight()
+                end
+                r=r-1
+                rn=r
+        end
+elseif start==1 then
+        print("Version 1.4.2 of 08.05.2014, BeastMashine")
+        while true do
+                print("Select the type job of miner: 0-Circle, 1-Side")
+                view=tonumber(read())
+                term.clear()
+                term.setCursorPos(1,1)
+                if view>-1 and view<2 then
+                                break
+                end
+                print("ERROR")
+        end
+        print("Installation level turtle")
+        c=tonumber(read())
+        term.clear()
+        term.setCursorPos(1,1)
+        while true do
+                print("Minimum level of turtles")
+                cmin=tonumber(read())
+                term.clear()
+                term.setCursorPos(1,1)
+                if cmin>-1 and cmin<c-1 then
+                        break
+                end
+                print("ERROR")
+        end
+        while true do
+                print("2-132 Coal ore")
+                print("2-68 Iron ore")
+                print("2-34 Gold ore")
+                print("2-33 Azure ore")
+                print("2-17 Red ore")
+                print("2-16 Diamond ore")
+                print("Choose the height of the shaft, depending on the desired resource.")
+                res=tonumber(read())
+                term.clear()
+                term.setCursorPos(1,1)
+                if res<c-1 then
+                        break
+                end
+                print("ERROR")
+        end
+        while true do
+                print("Radius of the turtle")
+                rn=tonumber(read())
+                term.clear()
+                term.setCursorPos(1,1)
+                if rn>=0 then
+                        break
+                end
+                print("ERROR")
+        end
+        while true do
+                print("Type fuel fot turtle: 0-Coal, 1-ChargeStation")
+                fuel=tonumber(read())
+                term.clear()
+                term.setCursorPos(1,1)
+                if fuel>=0 and fuel<=1 then
+                        break
+                end
+                print("ERROR")
+        end
+        coal=0
+        if fuel==0 then
+                while true do
+                        print("Use the extracted coal as a fuel?")
+                        print("0-No, 1-Yes")
+                        coal=tonumber(read())
+                        term.clear()
+                        term.setCursorPos(1,1)
+                        if coal>=0 and coal<2 then
+                                break
+                        end
+                        print("ERROR")
+                end
+        end
+        while true do
+                print("Type supply fot turtle: 0-Normal, 1-Ender chest")
+                type=tonumber(read())
+                term.clear()
+                term.setCursorPos(1,1)
+                if type>=0 and type<2 then
+                        break
+                end
+                print("ERROR")
+        end
+        while true do
+                print("Type of action with unnecessary resources: 0-Normal, 1-Destruction")
+                scrab=tonumber(read())
+                term.clear()
+                term.setCursorPos(1,1)
+                if scrab>=0 and scrab<2 then
+                        break
+                end
+                print("ERROR")
+        end
+ 
+        r=rn-1
+       
+        saveCoordinates()
+        saveSettings()
+end
+ 
+nap=1
+xp=0
+yp=0
+zp=c
+u=0
+op2=0
+invslot=16
+detect=0
+ci=0
+error=0
+ 
+rst=rs.getInput("top")
+if rst==false then
+        print("Pause")
+        print("If you want the turtle continued to work. Serve on top of redstone signal.")
+        while rst==false do
+                rst=rs.getInput("top")
+                sleep(1)
+        end
+end
+if turtle.getFuelLevel()<1000 then
+        fuelchet=0
+        print("Low Fuel Level")
+        print("Expects fuel 1 slot")
+        turtle.select(1)
+        while fuelchet==0 do
+                if turtle.getFuelLevel()>=1000 then fuelchet=1 end
+                turtle.refuel()
+        end
+        print("Fuel loading is complete")
+end
+if type==1 and turtle.getItemCount(16)==0 then
+        print("Put 16 slot Ender chest")
+        while turtle.getItemCount(16)==0 do
+                sleep(1)
+        end
+        print("Thanks!!!")
+end
+if scrab==1 then
+        if type==0 then slotd=16
+        elseif type==1 then slotd=15 end
+        for slot=13,slotd do
+                d=turtle.getItemCount(slot)
+                if d>0 then
+                        detect=detect+d
+                end
+        end
+        if detect==0 then
+                print("Place the sample resources for destruction in slots 13-16.")
+                print("Do not forget to put a sample resources.To start work please click Enter")
+                os.pullEvent(key,13)          
+        end
+        for slot=13,slotd do
+                d=turtle.getItemCount(slot)
+                if d>0 then
+                        detect=detect+d
+                end
+        end
+        if detect==0 then
+                print("HAAAAA HAAAAAA!!! Lowara :)")
+                return
+        end
+end
+for slot=1,16 do
+        if turtle.getItemCount(slot)>0 then
+                invslot=slot-1
+                if scrab==1 then compare=slot end
+                break
+        end
+end
+saveSettings()
+if view==0 then
+        while zp~=cmin do
+                Down()
+        end
+        if r>0 then
+                while xp~=r do
+                        Forward()
+                end
+                turnRight()
+                while yp~=r do
+                        Forward()
+                end
+        else r=0 end
+        while true do
+                Forward()
+                r=r+1
+                                saveCoordinates()
+                new=1  
+                op1=0
+                for chet=1,4 do
+                        if new==1 then rd=r*2-1 else rd=r*2 end
+                        turnRight()
+                        if op1==1 then
+                                Forward()
+                                rd=rd-1
+                        end
+                        if chet==1 then
+                                if op2==1 then
+                                        Forward()
+                                        rd=rd-1
+                                        op2=0
+                                end
+                        end
+                        repeat
+                                dig()
+                                if zp==cmin then
+                                        if rd==1 then op1=1 else op1=0 end
+                                end
+                                if zp==cmin then
+                                        if rd>=2 then
+                                                Forward()
+                                                Forward()
+                                                rd=rd-2
+                                                if chet==4 then
+                                                        if rd==0 then dig() end
+                                                end
+                                        else
+                                                Forward()
+                                                rd=rd-1
+                                        end
+                                end
+                                if zp==res then
+                                        if rd~=0 then
+                                                Forward()
+                                                rd=rd-1
+                                                if chet==4 then
+                                                        if rd==0 then
+                                                                dig()
+                                                                op2=1
+                                                        end
+                                                end
+                                        end
+                                end
+                        until rd<=0
+                        new=0
+                end
+        end
+elseif view==1 then
+        while zp~=res do
+                Down()
+        end
+        if rn==0 then
+                r=1
+        elseif rn>0 then
+                if rn==1 then
+                        r=1
+                else
+                        r=rn+1
+                        repeat
+                                turnLeft()
+                        until nap==4
+                        for chet=1,rn do
+                                Forward()
+                        end
+                        repeat
+                                turnRight()
+                        until nap==1
+                end
+        end
+        while true do
+                ri=r-1
+                for chet=1,3 do
+                        if chet==1 or chet==3 then
+                                rd=r
+                        elseif chet==2 or chet==4 then
+                                rd=r+ri
+                        end
+                        if op1==1 then
+                                Forward()
+                                rd=rd-1
+                        end
+                        repeat
+                                dig()
+                                if zp==cmin and rd==1 then op1=1 else op1=0 end
+                                if zp==cmin and rd>=2 then
+                                        Forward()
+                                        if xp<0 then
+                                                print("ERROR")
+                                                print("PAUSE")
+                                                while true do
+                                                        sleep(5)
+                                                end
+                                        end
+                                        Forward()
+                                        if xp<0 then
+                                                print("ERROR")
+                                                print("PAUSE")
+                                                while true do
+                                                        sleep(5)
+                                                end
+                                        end
+                                        rd=rd-2
+                                elseif rd~=0 then
+                                        Forward()
+                                        if xp<0 then
+                                                print("ERROR")
+                                                print("PAUSE")
+                                                while true do
+                                                        sleep(5)
+                                                end
+                                        end
+                                        rd=rd-1
+                                end
+                        until rd<=0
+                        if ci==0 and chet~=3 then turnRight()
+                        elseif ci==1 and chet~=3 then turnLeft() end
+                end
+                if ci==0 then
+                        turnLeft()
+                        if zp==cmin then op1=0
+                        elseif zp==res then dig() op1=1 end
+                        Forward()
+                        turnLeft()
+                        ci=1
+                elseif ci==1 then
+                        turnRight()
+                        if zp==cmin then op1=0
+                        elseif zp==res then dig() op1=1 end
+                        Forward()
+                        turnRight()
+                        ci=0
+                end
+                r=r+1
+        end
+end

@@ -1,0 +1,387 @@
+function isnumber(myvar)
+ local num
+ 
+ if type(myvar)=="number" then return true end
+ if type(myvar)~="string" then return false end
+ num=tonumber(myvar)
+ if num~=nil then return true end
+ return false
+end
+ 
+function unloadAll()
+ local i
+ turtle.turnRight()
+ turtle.turnRight()
+ for i=16,1,-1 do
+  turtle.select(i)
+  turtle.drop()
+ end
+ turtle.turnLeft()
+ turtle.turnLeft()
+end
+ 
+function isFull()
+ local i
+ local num
+ for i=1,16 do
+  num=turtle.getItemCount(i)
+  if num==0 then
+   return false
+  end
+ end
+ return true
+end
+ 
+function left()
+ if tD[1]==1 and tD[2]==0 then
+  tD[1]=0
+  tD[2]=-1
+ elseif tD[1]==0 and tD[2]==-1 then
+  tD[1]=-1
+  tD[2]=0
+ elseif tD[1]==-1 and tD[2]==0 then
+  tD[1]=0
+  tD[2]=1
+ elseif tD[1]==0 and tD[2]==1 then
+  tD[1]=1
+  tD[2]=0
+ end
+ turtle.turnLeft()
+end
+ 
+function right()
+ if tD[1]==1 and tD[2]==0 then
+  tD[1]=0
+  tD[2]=1
+ elseif tD[1]==0 and tD[2]==1 then
+  tD[1]=-1
+  tD[2]=0
+ elseif tD[1]==-1 and tD[2]==0 then
+  tD[1]=0
+  tD[2]=-1
+ elseif tD[1]==0 and tD[2]==-1 then
+  tD[1]=1
+  tD[2]=0
+ end
+ turtle.turnRight()
+end
+ 
+function turnL(num1,num2)
+ while tD[1]~=num1 or tD[2]~=num2 do
+  left()
+ end
+end
+ 
+function turnR(num1,num2)
+ while tD[1]~=num1 or tD[2]~=num2 do
+  right()
+ end
+end
+ 
+function toBase()
+ local i
+ local x=tX
+ local y=tY
+ local can_move=true
+ 
+ for i=tZ,0 do
+  tZ=tZ+1
+  turtle.digUp()
+  can_move=turtle.up()
+   while not can_move do
+    print("There is a something on my way!")
+        sleep(2)
+        turtle.attackUp()
+    can_move=turtle.up()
+   end
+ end
+ 
+ if tX>0 then
+  turnL(-1,0)
+  for i=1,x do
+   turtle.dig()
+   can_move=turtle.forward()
+   while not can_move do
+    print("There is a something on my way!")
+        sleep(2)
+        turtle.attack()
+    can_move=turtle.forward()
+   end
+   tX=tX-1
+  end
+ elseif tX<0 then
+  turnR(1,0)
+  x=-x
+  for i=1,x do
+   turtle.dig()
+   can_move=turtle.forward()
+   while not can_move do
+    print("There is a something on my way!")
+        sleep(2)
+        turtle.attack()
+    can_move=turtle.forward()
+   end
+   tX=tX+1
+  end
+ end
+ 
+ if tY>0 then
+  turnL(0,-1)
+  for i=1,y do
+   turtle.dig()
+   can_move=turtle.forward()
+   while not can_move do
+    print("There is a something on my way!")
+        sleep(2)
+        turtle.attack()
+    can_move=turtle.forward()
+   end
+   tY=tY-1
+  end
+ elseif tY<0 then
+  turnR(0,1)
+  y=-y
+  for i=1,y do
+   turtle.dig()
+   can_move=turtle.forward()
+   while not can_move do
+    print("There is a something on my way!")
+        sleep(2)
+        turtle.attack()
+    can_move=turtle.forward()
+   end
+   tY=tY+1
+  end
+ end
+ 
+ turnR(1,0)
+ turtle.digDown()
+ can_move=turtle.down()
+   while not can_move do
+    print("There is a something on my way!")
+        sleep(2)
+        turtle.attackDown()
+    can_move=turtle.down()
+   end
+ tZ=tZ-1
+end
+ 
+function toWork(x,y,z,d)
+ local i,steepX,steepY
+ local can_move=true
+ 
+ turtle.digUp()
+ can_move=turtle.up()
+   while not can_move do
+    print("There is a something on my way!")
+        sleep(2)
+        turtle.attackUp()
+    can_move=turtle.up()
+   end
+ tZ=tZ+1
+ 
+ if x>tX then
+  steepX=1
+ else
+  steepX=-1
+ end
+ if y>tY then
+  steepY=1
+ else
+  steepY=-1
+ end
+ 
+ turnR(steepX,0)
+ while tX~=x do
+  turtle.dig()
+  can_move=turtle.forward()
+   while not can_move do
+    print("There is a something on my way!")
+        sleep(2)
+        turtle.attack()
+    can_move=turtle.forward()
+   end
+  tX=tX+steepX
+ end
+ turnL(0,steepY)
+ while tY~=y do
+  turtle.dig()
+  can_move=turtle.forward()
+   while not can_move do
+    print("There is a something on my way!")
+        sleep(2)
+        turtle.attack()
+    can_move=turtle.forward()
+   end
+  tY=tY+steepY
+ end
+ 
+ turnR(d[1],d[2])
+ 
+ for i=tZ-1,z,-1 do
+  turtle.digDown()
+  can_move=turtle.down()
+   while not can_move do
+    print("There is a something on my way!")
+        sleep(2)
+        turtle.attackDown()
+    can_move=turtle.down()
+   end
+  tZ=tZ-1
+ end
+end
+ 
+function moveDig(n)
+ local i
+ local x,y,z,d
+ local can_move=true
+ d={}
+ 
+ if n<0 then
+  n=-n
+  turtle.turnLeft()
+  turtle.turnLeft()
+  for i=1,n do
+   -----------work break start
+   if isFull() then
+    x,y,z,d[1],d[2]=tX,tY,tZ,tD[1],tD[2]
+        toBase()       
+        unloadAll()
+        toWork(x,y,z,d)
+   end
+   -----------work break end
+   turtle.dig()
+   turtle.suck()
+   can_move=turtle.forward()
+   while not can_move do
+    print("There is a something on my way!")
+        sleep(2)
+        turtle.attack()
+    can_move=turtle.forward()
+   end
+   tX=tX-tD[1]
+   tY=tY-tD[2]
+  end
+  turtle.turnLeft()
+  turtle.turnLeft()
+ else
+  for i=1,n do
+   -----------work break start
+   if isFull() then
+    x,y,z,d[1],d[2]=tX,tY,tZ,tD[1],tD[2]
+        toBase()       
+        unloadAll()
+        toWork(x,y,z,d)
+   end
+   -----------work break end
+   turtle.dig()
+   turtle.suck()
+   can_move=turtle.forward()
+   while not can_move do
+    print("There is a something on my way!")
+        sleep(2)
+        turtle.attack()
+    can_move=turtle.forward()
+   end
+   tX=tX+tD[1]
+   tY=tY+tD[2]
+  end
+ end
+end
+ 
+function moveDigUp(n)
+ local i
+ local can_move=true
+ 
+ if n<0 then
+  n=-n
+  for i=1,n do
+   turtle.digDown()
+   can_move=turtle.down()
+   while not can_move do
+    print("There is a something on my way!")
+        sleep(2)
+        turtle.attackDown()
+    can_move=turtle.down()
+   end
+   tZ=tZ-1
+  end
+ else
+  for i=1,n do
+   turtle.digUp()
+   can_move=turtle.up()
+   while not can_move do
+    print("There is a something on my way!")
+        sleep(2)
+        turtle.attackUp()
+    can_move=turtle.up()
+   end
+   tZ=tZ+1
+  end
+ end
+end
+ 
+--------------------------------
+ 
+--global variables:
+tX,tY,tZ=0,0,0
+tD={1,0}
+ 
+--Locals:
+local i
+local args={...}
+local input
+ 
+if #args <1 or not isnumber(args[1]) then
+ print("Usage: dig <depth>")
+ print("  <depth> - depth of the mine.")
+ print("  Example: 'dig 20' - turtle will dig")
+ print("quarry 20 blocks down (5x5)")
+ print("Attention! Beware of bedrock!")
+ return
+end
+ 
+print("*'Miner' prog. is active!")
+print("  *Label: ",os.getComputerLabel())
+print("  *Fuel Level:",turtle.getFuelLevel())
+ 
+input = tonumber(args[1])
+ 
+print("Start digging ",input," blocks down.")
+ 
+moveDigUp(1)
+moveDig(3)
+moveDigUp(-1)
+ 
+for i=1,input do
+ moveDigUp(-1)
+ 
+ moveDig(1)
+ right()
+ moveDig(1)
+ right()
+ moveDig(2)
+ right()
+ moveDig(2)
+ right()
+ moveDig(3)
+ right()
+ moveDig(3)
+ right()
+ moveDig(4)
+ right()
+ moveDig(4)
+ right()
+ moveDig(4)
+ right()
+ moveDig(2)
+ right()
+ moveDig(2)
+ left()
+ left()
+end
+ 
+toBase()
+unloadAll()
+print("Miner application quits!")
+print("  *Fuel Level:",turtle.getFuelLevel())
