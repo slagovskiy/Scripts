@@ -1,7 +1,7 @@
 import os
 import sys
 from progress.bar import Bar
-from PyPDF2 import PdfFileReader, PdfFileMerger
+from PyPDF2 import PdfReader, PdfMerger
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
@@ -22,12 +22,12 @@ if __name__ == '__main__':
     for f in files:
         if os.path.splitext(f)[-1].lower() == '.pdf':
             file_in = open(os.path.join(sys.argv[1], f), 'rb')
-            pdf_reader = PdfFileReader(file_in, strict=False)
-            metadata = pdf_reader.getDocumentInfo()
+            pdf_reader = PdfReader(file_in, strict=False)
+            # metadata = pdf_reader.getDocumentInfo()
 
-            pdf_merger = PdfFileMerger(strict=False)
+            pdf_merger = PdfMerger(strict=False)
             pdf_merger.append(file_in)
-            pdf_merger.addMetadata({
+            pdf_merger.add_metadata({
                 '/Author': '',
                 '/Title': f.replace(os.path.splitext(f)[-1], '')
             })
